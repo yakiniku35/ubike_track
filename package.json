@@ -1,0 +1,30 @@
+{
+  "name": "ubike-track",
+  "version": "1.0.0",
+  "description": "YouBike 2.0 Taipei Live Map - An interactive real-time station map",
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 8000",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yakiniku35/ubike_track.git"
+  },
+  "keywords": [
+    "youbike",
+    "taipei",
+    "map",
+    "bike-sharing",
+    "leaflet"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yakiniku35/ubike_track/issues"
+  },
+  "homepage": "https://github.com/yakiniku35/ubike_track#readme",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}

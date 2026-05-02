@@ -3,6 +3,7 @@ import { initLocateButton, initMap, initThemeToggle } from './youbike-map-view.j
 import { applyFilter, loadData, selectStation } from './youbike-stations.js';
 import { state } from './youbike-state.js';
 import { debounce } from './youbike-utils.js';
+import './youbike-analytics.js';
 
 function bindEvents() {
   els.searchInput.addEventListener('input', debounce(e => {
