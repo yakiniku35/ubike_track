@@ -28,7 +28,7 @@ python3 -m http.server 8000
 Then open:
 
 ```text
-http://127.0.0.1:8000/youbike-map.html
+http://127.0.0.1:8000/
 ```
 
 ## Project Structure
@@ -38,7 +38,7 @@ http://127.0.0.1:8000/youbike-map.html
 ├── README.md
 ├── README.zh-TW.md
 ├── LICENSE
-├── youbike-map.html       # Page structure
+├── index.html             # Page structure
 ├── youbike-map.css        # Visual styles and responsive layout
 ├── youbike-map.js         # App entry point, initialization, and event binding
 ├── youbike-config.js      # API URL, refresh interval, and initial map settings
