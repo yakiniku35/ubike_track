@@ -1,29 +1,53 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-theme="dark">
+<html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>YouBike 2.0 台北即時地圖</title>
+<meta name="description" content="台北市 YouBike 2.0 站點即時地圖，一眼掌握各站可借車輛與可還空位，支援搜尋、篩選、排序與定位找最近站點。">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#171614" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f6f2" media="(prefers-color-scheme: light)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f98a3'/%3E%3Cg stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10' cy='21' r='4'/%3E%3Ccircle cx='22' cy='21' r='4'/%3E%3Cpath d='M10 21 L15 11 L21 11 L22 21'/%3E%3C/g%3E%3C/svg%3E">
+
+<script>
+  // 在 CSS 套用前就決定主題，避免深／淺色切換時的白光閃爍（FOUC）。
+  (function () {
+    var theme = 'dark';
+    try {
+      var saved = localStorage.getItem('youbike-theme');
+      theme = saved || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    } catch (e) { /* 無痕模式讀不到 localStorage，用預設值即可 */ }
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://tcgbusfs.blob.core.windows.net">
+<link rel="dns-prefetch" href="https://basemaps.cartocdn.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link rel="stylesheet" href="youbike-map.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 </head>
 <body>
 <!-- LOADING -->
-<div class="loading-overlay" id="loading">
-  <div class="spinner"></div>
+<div class="loading-overlay" id="loading" role="status" aria-live="polite">
+  <div class="spinner" aria-hidden="true"></div>
   <p class="loading-text">正在載入即時資料…</p>
 </div>
+
+<noscript>
+  <p class="noscript-note">這個網站需要 JavaScript 才能顯示即時地圖，請在瀏覽器設定中開啟。</p>
+</noscript>
 
 <!-- HEADER -->
 <header>
   <div class="header-left">
     <div class="logo-wrap">
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-label="YouBike logo" xmlns="http://www.w3.org/2000/svg">
-        <rect width="28" height="28" rx="7" fill="var(--color-primary)"/>
+      <svg class="logo-mark" width="28" height="28" viewBox="0 0 28 28" fill="none" role="img" aria-label="YouBike" xmlns="http://www.w3.org/2000/svg">
+        <rect width="28" height="28" rx="7" fill="currentColor"/>
         <circle cx="9" cy="19" r="3.5" stroke="white" stroke-width="1.8"/>
         <circle cx="19" cy="19" r="3.5" stroke="white" stroke-width="1.8"/>
         <path d="M9 19 L13 10 L19 10 L19 19" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
@@ -35,36 +59,32 @@
       </div>
     </div>
     <div class="update-badge">
-      <span class="update-dot"></span>
+      <span class="update-dot" aria-hidden="true"></span>
       <span id="update-time">載入中</span>
     </div>
   </div>
-  <button class="theme-toggle" data-theme-toggle aria-label="切換深色模式">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-    </svg>
-  </button>
+  <button class="theme-toggle" type="button" data-theme-toggle aria-label="切換主題"></button>
 </header>
 
 <!-- KPI ROW -->
-<div class="kpi-row">
-  <div class="kpi-card">
+<div class="kpi-row" role="list" aria-label="整體統計">
+  <div class="kpi-card" role="listitem">
     <span class="kpi-label">總站點</span>
     <span class="kpi-value teal" id="kpi-total">–</span>
   </div>
-  <div class="kpi-card">
+  <div class="kpi-card" role="listitem">
     <span class="kpi-label">可借車輛</span>
     <span class="kpi-value green" id="kpi-bikes">–</span>
   </div>
-  <div class="kpi-card">
+  <div class="kpi-card" role="listitem">
     <span class="kpi-label">可還空位</span>
     <span class="kpi-value teal" id="kpi-space">–</span>
   </div>
-  <div class="kpi-card">
+  <div class="kpi-card" role="listitem">
     <span class="kpi-label">無車站數</span>
     <span class="kpi-value red" id="kpi-empty">–</span>
   </div>
-  <div class="kpi-card">
+  <div class="kpi-card" role="listitem">
     <span class="kpi-label">整體可借率</span>
     <span class="kpi-value orange" id="kpi-rate">–</span>
   </div>
@@ -73,25 +93,41 @@
 <!-- MAIN -->
 <div class="main-layout">
   <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <aside class="sidebar" aria-label="站點搜尋與列表">
+    <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-expanded="true" aria-label="收合站點列表">
+      <span class="sidebar-toggle-grip" aria-hidden="true"></span>
+    </button>
+
     <div class="filter-bar">
-      <span class="filter-label">篩選站點</span>
-      <input class="filter-input" type="text" id="search-input" placeholder="搜尋站名…">
-      <div class="filter-chips">
-        <button class="chip active" data-filter="all">全部</button>
-        <button class="chip" data-filter="ok">有車</button>
-        <button class="chip" data-filter="empty">無車</button>
-        <button class="chip" data-filter="full">無位</button>
+      <label class="filter-label" for="search-input">篩選站點</label>
+      <input class="filter-input" type="search" id="search-input" placeholder="搜尋站名或地址…" autocomplete="off" enterkeyhint="search">
+      <div class="filter-chips" role="group" aria-label="供需狀態篩選">
+        <button class="chip active" type="button" data-filter="all" aria-pressed="true">全部</button>
+        <button class="chip" type="button" data-filter="ok" aria-pressed="false">有車</button>
+        <button class="chip" type="button" data-filter="empty" aria-pressed="false">無車</button>
+        <button class="chip" type="button" data-filter="full" aria-pressed="false">無位</button>
+      </div>
+      <div class="filter-sort">
+        <label class="filter-label" for="sort-select">排序</label>
+        <select class="filter-select" id="sort-select">
+          <option value="bikes">可借最多</option>
+          <option value="spaces">可還最多</option>
+          <option value="name">站名順序</option>
+          <option value="distance" disabled>離我最近（需定位）</option>
+        </select>
       </div>
     </div>
+
     <div class="sidebar-header">
       <span>站點列表</span>
-      <span id="sidebar-count" style="color:var(--color-text-faint)">–</span>
+      <span id="sidebar-count" class="sidebar-count">–</span>
     </div>
+
     <div class="sidebar-list" id="station-list">
-      <div class="empty-state">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <p>搜尋站點名稱</p>
+      <div class="skeleton-list" aria-hidden="true">
+        <div class="skeleton-item"></div><div class="skeleton-item"></div>
+        <div class="skeleton-item"></div><div class="skeleton-item"></div>
+        <div class="skeleton-item"></div><div class="skeleton-item"></div>
       </div>
     </div>
   </aside>
@@ -99,26 +135,28 @@
   <!-- MAP -->
   <div class="map-shell">
     <div id="map"></div>
-    <div class="map-controls" aria-label="地圖工具">
+
+    <div class="map-controls" role="group" aria-label="地圖工具">
       <button class="map-control-btn" id="locate-button" type="button" aria-label="定位到目前位置" title="定位到目前位置">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/></svg>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/></svg>
       </button>
-      <button class="map-control-btn" id="refresh-button" type="button" aria-label="重新整理資料" title="重新整理資料">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 1-15.1 6.64"/><path d="M3 12A9 9 0 0 1 18.1 5.36"/><path d="M21 3v6h-6"/><path d="M3 21v-6h6"/></svg>
+      <button class="map-control-btn" id="refresh-button" type="button" aria-label="重新整理資料" title="重新整理資料（快捷鍵 R）">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.1 6.64"/><path d="M3 12A9 9 0 0 1 18.1 5.36"/><path d="M21 3v6h-6"/><path d="M3 21v-6h6"/></svg>
       </button>
     </div>
+
     <div class="map-legend">
       <div class="legend-title">可借車輛數</div>
-      <div class="legend-row"><div class="legend-dot" style="width:20px;height:20px;background:#6daa45;opacity:0.85;border:2px solid rgba(255,255,255,0.3)"></div><span class="legend-text">充足（≥10）</span></div>
-      <div class="legend-row"><div class="legend-dot" style="width:14px;height:14px;background:#bb653b;opacity:0.85;border:2px solid rgba(255,255,255,0.3)"></div><span class="legend-text">偏少（1–9）</span></div>
-      <div class="legend-row"><div class="legend-dot" style="width:10px;height:10px;background:#a12c7b;opacity:0.85;border:2px solid rgba(255,255,255,0.3)"></div><span class="legend-text">無車（0）</span></div>
-      <div style="margin-top:var(--space-2);padding-top:var(--space-2);border-top:1px solid var(--color-border)">
-        <div class="legend-title" style="margin-bottom:4px">圓點大小</div>
-        <div style="font-size:var(--text-xs);color:var(--color-text-muted)">= 可借車輛數量</div>
-      </div>
+      <div class="legend-row"><span class="legend-dot legend-dot--lg" data-level="ok"></span><span class="legend-text">充足（≥10）</span></div>
+      <div class="legend-row"><span class="legend-dot legend-dot--md" data-level="low"></span><span class="legend-text">偏少（1–9）</span></div>
+      <div class="legend-row"><span class="legend-dot legend-dot--sm" data-level="empty"></span><span class="legend-text">無車（0）</span></div>
+      <div class="legend-note">圓點大小 = 可借車輛數量</div>
     </div>
   </div>
 </div>
+
+<!-- TOASTS -->
+<div class="toast-stack" id="toast-stack" role="status" aria-live="polite"></div>
 
 <script type="module" src="youbike-map.js"></script>
 <!-- Vercel Web Analytics -->

@@ -9,13 +9,17 @@ An interactive Taipei YouBike 2.0 real-time station map built with Leaflet. The 
 - Displays Taipei YouBike 2.0 stations in real time
 - Uses marker color and size to represent available bike counts
 - Shows total stations, available bikes, return slots, empty stations, and overall bike availability rate
-- Supports station name and address search
+- Supports station name and address search (Chinese and English, case-insensitive)
 - Supports filters for all stations, stations with bikes, empty stations, and full stations
+- Supports sorting by most bikes, most return slots, station name, or distance from you
 - Opens the station popup and moves the map when a station is selected from the list
-- Supports dark/light theme switching and remembers the preference
-- Supports current-location positioning
-- Refreshes data automatically every 60 seconds, with manual refresh support
-- Keeps both the map and station search list usable on mobile screens
+- Supports dark/light theme switching and remembers the preference; follows the system setting on first visit
+- Supports current-location positioning, which also enables distance-based sorting
+- Refreshes data automatically every 60 seconds, with manual refresh support, and keeps retrying after a network outage
+- Surfaces refresh failures as a toast while keeping the previously loaded data on screen
+- On mobile, the map sits above a collapsible station list so the map can take the full screen
+- Keyboard shortcuts: `/` focuses search, `Esc` clears it, `R` refreshes
+- Honors `prefers-reduced-motion` by disabling animations
 
 ## Quick Start
 
