@@ -110,6 +110,16 @@ export function highlightStation(sno) {
 /** 同一時間只允許一個請求在跑，見 loadData 內的說明。 */
 let isLoading = false;
 
+/**
+ * 抓取並套用最新的站點資料。成功時更新 KPI、地圖標記與側欄；
+ * 失敗時交給 reportFailure 決定怎麼呈現。
+ * 不論成功或失敗，都會在結束時排定下一次自動更新。
+ *
+ * @param {{ silent?: boolean }} [options]
+ * @param {boolean} [options.silent=false]
+ *   true 代表這是背景自動更新，失敗時不會用整頁錯誤畫面蓋掉現有內容
+ * @returns {Promise<void>} 已有請求在執行時會直接返回，不會重複發送
+ */
 export async function loadData({ silent = false } = {}) {
   // 鍵盤捷徑、分頁切回前景、定時刷新、重試按鈕都可能同時觸發 loadData。
   // 沒有這道閘門的話：較早送出但較晚回來的請求會覆寫較新的資料，
@@ -147,6 +157,13 @@ export async function loadData({ silent = false } = {}) {
   }
 }
 
+/**
+ * 依「畫面上目前有沒有資料」決定錯誤的呈現方式：
+ * 已經有資料就只用浮動提示，完全沒有資料時才顯示整頁錯誤畫面。
+ *
+ * @param {unknown} error fetchStations 丟出的錯誤；AbortError 代表逾時
+ * @param {boolean} silent 是否為背景自動更新
+ */
 function reportFailure(error, silent) {
   const isTimeout = error?.name === 'AbortError';
   if (silent || state.stations.length > 0) {

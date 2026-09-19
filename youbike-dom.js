@@ -35,6 +35,13 @@ export const els = {
  */
 const loadingMarkup = els.loading?.innerHTML ?? '';
 
+/**
+ * 把按鈕切成忙碌狀態：停用點擊，並設定 aria-busy 讓輔助技術也知道。
+ * CSS 會依 aria-busy 讓按鈕裡的圖示轉圈。
+ *
+ * @param {HTMLButtonElement | null | undefined} button 目標按鈕，沒有就直接略過
+ * @param {boolean} isBusy true 為忙碌中（同時停用），false 為恢復可用
+ */
 export function setButtonBusy(button, isBusy) {
   if (!button) return;
   button.setAttribute('aria-busy', String(isBusy));

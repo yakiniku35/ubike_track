@@ -181,6 +181,14 @@ export function flyToStation(station) {
   state.map.flyTo([station.lat, station.lng], FOCUS_ZOOM, { duration: 0.8 });
 }
 
+/**
+ * 綁定定位按鈕。三種無法定位的情況各自給出對應的說明，
+ * 而不是籠統地說「定位失敗」：瀏覽器沒有定位功能、頁面不是安全連線、
+ * 以及實際呼叫後回報的錯誤（權限、取不到位置、逾時）。
+ *
+ * @param {(location: { lat: number, lng: number }) => void} [onLocated]
+ *   定位成功後的回呼，呼叫端用它來開放「離我最近」排序
+ */
 export function initLocateButton(onLocated) {
   els.locateButton?.addEventListener('click', () => {
     if (!navigator.geolocation) {
