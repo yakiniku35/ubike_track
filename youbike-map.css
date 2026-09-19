@@ -12,6 +12,8 @@
   --color-text: #28251d;
   --color-text-muted: #6b6a65;
   --color-text-faint: #a8a7a2;
+  /* placeholder 專用：對輸入框底色達 4.72:1，符合 WCAG 4.5:1 */
+  --color-text-placeholder: #686762;
   --color-primary: #01696f;
   --color-success: #437a22;
   --color-warning: #964219;
@@ -57,6 +59,8 @@
   --color-text: #d6d5d3;
   --color-text-muted: #8b8a88;
   --color-text-faint: #5a5957;
+  /* placeholder 專用：對輸入框底色達 4.69:1，符合 WCAG 4.5:1 */
+  --color-text-placeholder: #8f8e8c;
   --color-primary: #4f98a3;
   --color-success: #6daa45;
   --color-warning: #bb653b;
@@ -280,7 +284,7 @@ header {
   transition: border-color var(--transition-interactive), box-shadow var(--transition-interactive);
 }
 
-.filter-input::placeholder { color: var(--color-text-faint); }
+.filter-input::placeholder { color: var(--color-text-placeholder); }
 
 .filter-input:focus,
 .filter-select:focus {

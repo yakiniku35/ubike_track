@@ -107,7 +107,16 @@ export function highlightStation(sno) {
   renderSidebar(filterStations());
 }
 
+/** 同一時間只允許一個請求在跑，見 loadData 內的說明。 */
+let isLoading = false;
+
 export async function loadData({ silent = false } = {}) {
+  // 鍵盤捷徑、分頁切回前景、定時刷新、重試按鈕都可能同時觸發 loadData。
+  // 沒有這道閘門的話：較早送出但較晚回來的請求會覆寫較新的資料，
+  // 而且先完成的那個會在其他請求還在跑時就把按鈕的忙碌狀態清掉。
+  if (isLoading) return;
+  isLoading = true;
+
   try {
     setRefreshBusy(true);
     const raw = await fetchStations();
@@ -131,6 +140,7 @@ export async function loadData({ silent = false } = {}) {
   } catch (error) {
     reportFailure(error, silent);
   } finally {
+    isLoading = false;
     setRefreshBusy(false);
     // 不論成功或失敗都重新排程，否則一次斷線就再也不會自動更新了。
     scheduleRefresh();
@@ -167,9 +177,17 @@ async function fetchStations() {
 
     const data = await res.json();
     // API 正常回傳陣列，但偶爾會包成物件，兩種都接住。
-    if (Array.isArray(data)) return data;
-    if (data && typeof data === 'object') return Object.values(data);
-    throw new Error('資料格式不正確');
+    const items = Array.isArray(data) ? data
+      : (data && typeof data === 'object') ? Object.values(data)
+      : null;
+    if (!items) throw new Error('資料格式不正確');
+
+    // 維護期間 API 可能以 HTTP 200 回傳 { message: '...' } 這類內容。
+    // 若不檢查，這些資料會被正規化成無效站點、再被篩掉變成空陣列，
+    // 結果是地圖上的標記全被清空卻完全不會進入錯誤處理。
+    const stations = items.filter(item => item && typeof item === 'object' && item.sno != null);
+    if (stations.length === 0) throw new Error('資料格式不正確');
+    return stations;
   } finally {
     clearTimeout(timeout);
   }

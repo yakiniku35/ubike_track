@@ -29,7 +29,11 @@ export function toNumber(value) {
  */
 export function pickNumber(source, keys) {
   for (const key of keys) {
-    const n = Number(source?.[key]);
+    const value = source?.[key];
+    // Number(null) 與 Number('') 都是 0（而且是有限數），
+    // 若不先擋掉，前面欄位一旦是 null 就再也輪不到後面的備援欄位。
+    if (value == null || (typeof value === 'string' && !value.trim())) continue;
+    const n = Number(value);
     if (Number.isFinite(n)) return n;
   }
   return 0;
@@ -89,10 +93,13 @@ export function normalizeStation(raw) {
 /** 連續觸發時只執行最後一次，用於搜尋輸入避免每個字都重繪列表。 */
 export function debounce(fn, wait = 180) {
   let timer;
-  return (...args) => {
+  const debounced = (...args) => {
     clearTimeout(timer);
     timer = setTimeout(() => fn(...args), wait);
   };
+  /** 取消尚未執行的那一次呼叫，例如使用者直接按 Esc 清空搜尋時。 */
+  debounced.cancel = () => clearTimeout(timer);
+  return debounced;
 }
 
 export function formatCount(value) {

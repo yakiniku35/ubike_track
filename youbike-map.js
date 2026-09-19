@@ -34,6 +34,9 @@ function bindSearch() {
   // 搜尋框按 Esc 直接清空，比用滑鼠點掉整串文字快。
   els.searchInput.addEventListener('keydown', event => {
     if (event.key !== 'Escape' || !els.searchInput.value) return;
+    // 先取消還在等待的那次搜尋，否則它會在 180ms 後把剛清掉的關鍵字寫回來，
+    // 造成「輸入框是空的、列表卻還在套用舊條件」。
+    runSearch.cancel();
     els.searchInput.value = '';
     state.searchQuery = '';
     applyFilter();
