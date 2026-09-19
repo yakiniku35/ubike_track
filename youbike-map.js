@@ -137,8 +137,11 @@ function init() {
   // Leaflet 是從 CDN 載入的，萬一被擋掉就不會有 window.L，
   // 這時要明確告訴使用者，而不是讓載入動畫一直轉。
   if (typeof L === 'undefined') {
-    showLoadError(() => window.location.reload());
-    els.updateTime.textContent = '地圖載入失敗';
+    showLoadError(() => window.location.reload(), {
+      status: '地圖載入失敗',
+      title: '地圖元件載入失敗',
+      hint: '地圖函式庫無法載入，請確認網路或瀏覽器擴充功能是否封鎖了 CDN'
+    });
     return;
   }
 

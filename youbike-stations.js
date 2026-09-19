@@ -77,9 +77,11 @@ function renderStationItem(station) {
   const isActive = station.sno === state.activeStationId;
   const distance = Number.isFinite(station.distance) ? ` · ${formatDistance(station.distance)}` : '';
 
+  // aria-current 只在選中時輸出：未選中時省略即可，不必輸出 false。
+  const currentAttr = isActive ? ' aria-current="true"' : '';
+
   return `<button class="station-item${isActive ? ' active' : ''}" type="button"
-      data-sno="${escapeHtml(station.sno)}"
-      aria-current="${isActive}"
+      data-sno="${escapeHtml(station.sno)}"${currentAttr}
       aria-label="${escapeHtml(station.name)}，可借 ${station.bikes} 輛，可還 ${station.spaces} 位">
     <span class="station-dot" data-level="${bikeLevel(station.bikes)}" aria-hidden="true"></span>
     <span class="station-main">

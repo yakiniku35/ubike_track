@@ -38,10 +38,7 @@ export function initMap() {
   state.map = L.map('map', {
     center: DEFAULT_CENTER,
     zoom: DEFAULT_ZOOM,
-    zoomControl: true,
-    // 手機上慣性滑動會讓地圖一直飄，關掉手感比較穩。
-    inertia: true,
-    worldCopyJump: false
+    zoomControl: true
   });
 
   state.tileLayer = L.tileLayer(tileUrl(), {

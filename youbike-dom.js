@@ -3,6 +3,8 @@
  * 其他模組只呼叫這些函式，不必自己去 querySelector。
  */
 
+import { escapeHtml } from './youbike-utils.js';
+
 const $ = id => document.getElementById(id);
 
 export const els = {
@@ -46,17 +48,22 @@ export function hideLoading() {
 /**
  * 首次載入失敗時的整頁錯誤畫面。
  * 用 addEventListener 綁定重試，不再依賴 inline onclick 與 window 全域函式。
+ * 文案可覆寫，因為「資料抓不到」和「地圖函式庫載不進來」是兩種不同的失敗。
  */
-export function showLoadError(onRetry) {
-  els.updateTime.textContent = '更新失敗';
+export function showLoadError(onRetry, {
+  status = '更新失敗',
+  title = '無法載入資料',
+  hint = '請確認網路連線後再試一次'
+} = {}) {
+  els.updateTime.textContent = status;
 
   const overlay = els.loading;
   if (!overlay?.isConnected) return;
 
   overlay.innerHTML = `
     <div class="load-error">
-      <p class="load-error-title">無法載入資料</p>
-      <p class="load-error-hint">請確認網路連線後再試一次</p>
+      <p class="load-error-title">${escapeHtml(title)}</p>
+      <p class="load-error-hint">${escapeHtml(hint)}</p>
       <button class="retry-button" type="button">重新載入</button>
     </div>`;
 
