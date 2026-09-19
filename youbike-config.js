@@ -86,8 +86,12 @@ export const MESSAGES = {
   /** 定位的浮動提示。 */
   locate: {
     success: '已定位到目前位置',
-    // navigator.geolocation 在非 HTTPS 頁面也會不存在，所以不說「不支援」。
+    // 只有瀏覽器真的沒有定位功能時才會用到。
+    // （非安全連線下 navigator.geolocation 仍然存在，另見 insecure。）
     unsupported: '這個瀏覽器無法使用定位功能，請改用其他瀏覽器',
+    // 非安全連線時瀏覽器一律回報權限錯誤（code 1），但這不是權限問題，
+    // 使用者再怎麼開權限也沒用，要換的是網址。
+    insecure: '這個頁面不是安全連線，無法使用定位，請改用 https 開頭的網址開啟',
     failed: '定位失敗，請再試一次',
     /** 對應 GeolocationPositionError.code：1 權限、2 取不到、3 逾時。 */
     byCode: {

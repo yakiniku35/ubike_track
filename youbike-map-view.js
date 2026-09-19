@@ -188,6 +188,14 @@ export function initLocateButton(onLocated) {
       return;
     }
 
+    // 非安全連線（不是 https、也不是 localhost）時，瀏覽器會直接回報
+    // 權限錯誤。先擋下來給正確的說明，否則使用者只會看到「權限被關閉」，
+    // 然後徒勞地去開權限。
+    if (!window.isSecureContext) {
+      showToast(MESSAGES.locate.insecure, 'error');
+      return;
+    }
+
     setButtonBusy(els.locateButton, true);
     navigator.geolocation.getCurrentPosition(
       position => {
