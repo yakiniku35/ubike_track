@@ -3,6 +3,7 @@
  * 其他模組只呼叫這些函式，不必自己去 querySelector。
  */
 
+import { MESSAGES } from './youbike-config.js';
 import { escapeHtml } from './youbike-utils.js';
 
 const $ = id => document.getElementById(id);
@@ -27,6 +28,20 @@ export const els = {
 };
 
 /** 把按鈕切成「忙碌中」，CSS 會讓圖示轉圈。 */
+/**
+ * 開場的載入畫面內容，在模組載入時先存一份。
+ * 重試時直接還原這份快照，首次載入與重試就必定顯示同一段文字——
+ * 文案只存在於 index.html 一處，不會因為只改其中一邊而對不上。
+ */
+const loadingMarkup = els.loading?.innerHTML ?? '';
+
+/**
+ * 把按鈕切成忙碌狀態：停用點擊，並設定 aria-busy 讓輔助技術也知道。
+ * CSS 會依 aria-busy 讓按鈕裡的圖示轉圈。
+ *
+ * @param {HTMLButtonElement | null | undefined} button 目標按鈕，沒有就直接略過
+ * @param {boolean} isBusy true 為忙碌中（同時停用），false 為恢復可用
+ */
 export function setButtonBusy(button, isBusy) {
   if (!button) return;
   button.setAttribute('aria-busy', String(isBusy));
@@ -51,9 +66,9 @@ export function hideLoading() {
  * 文案可覆寫，因為「資料抓不到」和「地圖函式庫載不進來」是兩種不同的失敗。
  */
 export function showLoadError(onRetry, {
-  status = '更新失敗',
-  title = '無法載入資料',
-  hint = '請確認網路連線後再試一次'
+  status = MESSAGES.dataError.status,
+  title = MESSAGES.dataError.title,
+  hint = MESSAGES.dataError.hint
 } = {}) {
   els.updateTime.textContent = status;
 
@@ -64,11 +79,11 @@ export function showLoadError(onRetry, {
     <div class="load-error">
       <p class="load-error-title">${escapeHtml(title)}</p>
       <p class="load-error-hint">${escapeHtml(hint)}</p>
-      <button class="retry-button" type="button">重新載入</button>
+      <button class="retry-button" type="button">${escapeHtml(MESSAGES.retryButton)}</button>
     </div>`;
 
   overlay.querySelector('.retry-button')?.addEventListener('click', () => {
-    overlay.innerHTML = '<div class="spinner"></div><p class="loading-text">正在載入即時資料…</p>';
+    overlay.innerHTML = loadingMarkup;
     onRetry();
   });
 }
