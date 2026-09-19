@@ -58,9 +58,6 @@ export const DEFAULT_SORT = 'bikes';
  * - 以全形逗號分隔，句尾不加句號
  */
 export const MESSAGES = {
-  /** 載入中（index.html 裡也有同一句，修改時要一起改）。 */
-  loading: '正在載入即時資料…',
-
   /** 整頁錯誤畫面上的重試按鈕，錯誤文案會直接引用這個名稱。 */
   retryButton: '重新載入',
 

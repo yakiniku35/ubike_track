@@ -28,6 +28,13 @@ export const els = {
 };
 
 /** 把按鈕切成「忙碌中」，CSS 會讓圖示轉圈。 */
+/**
+ * 開場的載入畫面內容，在模組載入時先存一份。
+ * 重試時直接還原這份快照，首次載入與重試就必定顯示同一段文字——
+ * 文案只存在於 index.html 一處，不會因為只改其中一邊而對不上。
+ */
+const loadingMarkup = els.loading?.innerHTML ?? '';
+
 export function setButtonBusy(button, isBusy) {
   if (!button) return;
   button.setAttribute('aria-busy', String(isBusy));
@@ -69,7 +76,7 @@ export function showLoadError(onRetry, {
     </div>`;
 
   overlay.querySelector('.retry-button')?.addEventListener('click', () => {
-    overlay.innerHTML = `<div class="spinner"></div><p class="loading-text">${escapeHtml(MESSAGES.loading)}</p>`;
+    overlay.innerHTML = loadingMarkup;
     onRetry();
   });
 }
