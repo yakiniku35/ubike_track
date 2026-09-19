@@ -2,7 +2,7 @@
  * 進入點：把各模組接起來、綁事件、啟動第一次載入。
  */
 
-import { DEFAULT_SORT, SORT_MODES, STORAGE_KEYS } from './youbike-config.js';
+import { DEFAULT_SORT, MESSAGES, SORT_MODES, STORAGE_KEYS } from './youbike-config.js';
 import { els, showLoadError } from './youbike-dom.js';
 import { initLocateButton, initMap, initThemeToggle, setOnMarkerSelect } from './youbike-map-view.js';
 import { applyFilter, highlightStation, loadData, selectStation, updateDistances } from './youbike-stations.js';
@@ -140,11 +140,7 @@ function init() {
   // Leaflet 是從 CDN 載入的，萬一被擋掉就不會有 window.L，
   // 這時要明確告訴使用者，而不是讓載入動畫一直轉。
   if (typeof L === 'undefined') {
-    showLoadError(() => window.location.reload(), {
-      status: '地圖載入失敗',
-      title: '地圖元件載入失敗',
-      hint: '地圖函式庫無法載入，請確認網路或瀏覽器擴充功能是否封鎖了 CDN'
-    });
+    showLoadError(() => window.location.reload(), MESSAGES.mapError);
     return;
   }
 

@@ -3,7 +3,7 @@
  */
 
 import {
-  DEFAULT_CENTER, DEFAULT_ZOOM, FOCUS_ZOOM, LEVEL_COLORS, LOCATE_ZOOM,
+  DEFAULT_CENTER, DEFAULT_ZOOM, FOCUS_ZOOM, LEVEL_COLORS, LOCATE_ZOOM, MESSAGES,
   LOW_BIKES_THRESHOLD, STORAGE_KEYS, TILE_ATTRIBUTION, TILE_STYLES, TILE_URL_TEMPLATE
 } from './youbike-config.js';
 import { els, setButtonBusy, showToast } from './youbike-dom.js';
@@ -13,12 +13,6 @@ import { bikeLevel, escapeHtml } from './youbike-utils.js';
 const THEME_ICONS = {
   dark: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
   light: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
-};
-
-const GEO_ERROR_MESSAGES = {
-  1: '你拒絕了定位權限，請到瀏覽器設定開啟',
-  2: '目前無法取得位置資訊',
-  3: '定位逾時，請稍後再試'
 };
 
 /** 點到圓點時要通知外部（由 youbike-stations.js 註冊）。 */
@@ -190,7 +184,7 @@ export function flyToStation(station) {
 export function initLocateButton(onLocated) {
   els.locateButton?.addEventListener('click', () => {
     if (!navigator.geolocation) {
-      showToast('這個瀏覽器不支援定位功能', 'error');
+      showToast(MESSAGES.locate.unsupported, 'error');
       return;
     }
 
@@ -201,13 +195,13 @@ export function initLocateButton(onLocated) {
         const location = { lat: position.coords.latitude, lng: position.coords.longitude };
         showUserLocation(location);
         state.map.flyTo([location.lat, location.lng], LOCATE_ZOOM, { duration: 0.8 });
-        showToast('已定位到目前位置');
+        showToast(MESSAGES.locate.success);
         onLocated?.(location);
       },
       error => {
         // 原本定位失敗完全沒有回饋，使用者只會覺得按鈕壞掉。
         setButtonBusy(els.locateButton, false);
-        showToast(GEO_ERROR_MESSAGES[error.code] ?? '定位失敗', 'error');
+        showToast(MESSAGES.locate.byCode[error.code] ?? MESSAGES.locate.failed, 'error');
       },
       { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 }
     );

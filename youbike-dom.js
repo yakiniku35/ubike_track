@@ -3,6 +3,7 @@
  * 其他模組只呼叫這些函式，不必自己去 querySelector。
  */
 
+import { MESSAGES } from './youbike-config.js';
 import { escapeHtml } from './youbike-utils.js';
 
 const $ = id => document.getElementById(id);
@@ -51,9 +52,9 @@ export function hideLoading() {
  * 文案可覆寫，因為「資料抓不到」和「地圖函式庫載不進來」是兩種不同的失敗。
  */
 export function showLoadError(onRetry, {
-  status = '更新失敗',
-  title = '無法載入資料',
-  hint = '請確認網路連線後再試一次'
+  status = MESSAGES.dataError.status,
+  title = MESSAGES.dataError.title,
+  hint = MESSAGES.dataError.hint
 } = {}) {
   els.updateTime.textContent = status;
 
@@ -64,11 +65,11 @@ export function showLoadError(onRetry, {
     <div class="load-error">
       <p class="load-error-title">${escapeHtml(title)}</p>
       <p class="load-error-hint">${escapeHtml(hint)}</p>
-      <button class="retry-button" type="button">重新載入</button>
+      <button class="retry-button" type="button">${escapeHtml(MESSAGES.retryButton)}</button>
     </div>`;
 
   overlay.querySelector('.retry-button')?.addEventListener('click', () => {
-    overlay.innerHTML = '<div class="spinner"></div><p class="loading-text">正在載入即時資料…</p>';
+    overlay.innerHTML = `<div class="spinner"></div><p class="loading-text">${escapeHtml(MESSAGES.loading)}</p>`;
     onRetry();
   });
 }

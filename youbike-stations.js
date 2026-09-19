@@ -2,7 +2,7 @@
  * 站點資料的取得、篩選、排序與側欄渲染。
  */
 
-import { API_URL, FETCH_TIMEOUT_MS, MAX_SIDEBAR_ITEMS, REFRESH_INTERVAL_MS } from './youbike-config.js';
+import { API_URL, FETCH_TIMEOUT_MS, MAX_SIDEBAR_ITEMS, MESSAGES, REFRESH_INTERVAL_MS } from './youbike-config.js';
 import { els, hideLoading, setRefreshBusy, showLoadError, showToast } from './youbike-dom.js';
 import { flyToStation, syncMarkers, updateMarkers } from './youbike-map-view.js';
 import { state } from './youbike-state.js';
@@ -134,7 +134,7 @@ export async function loadData({ silent = false } = {}) {
     state.lastLoadedAt = Date.now();
 
     if (state.hasReportedError) {
-      showToast('已重新連線，資料更新完成');
+      showToast(MESSAGES.refresh.recovered);
       state.hasReportedError = false;
     }
   } catch (error) {
@@ -152,9 +152,9 @@ function reportFailure(error, silent) {
   if (silent || state.stations.length > 0) {
     // 已經有資料在畫面上，用輕量提示就好，不要蓋掉整張地圖。
     if (!state.hasReportedError) {
-      showToast(isTimeout ? '更新逾時，稍後會自動重試' : '更新失敗，稍後會自動重試', 'error');
+      showToast(isTimeout ? MESSAGES.refresh.timeout : MESSAGES.refresh.failed, 'error');
     }
-    els.updateTime.textContent = '更新失敗';
+    els.updateTime.textContent = MESSAGES.dataError.status;
     state.hasReportedError = true;
     return;
   }
